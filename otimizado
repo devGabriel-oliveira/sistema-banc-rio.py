@@ -1,0 +1,119 @@
+import textwrap
+
+def menu():
+    menu_texto = """\n
+    ================ MENU ================
+    [d]\tDepositar
+    [s]\tSacar
+    [e]\tExtrato
+    [nu]\tNovo usuário
+    [nc]\tNova conta
+    [lc]\tListar contas
+    [q]\tSair
+    => """
+    return input(textwrap.dedent(menu_texto))
+
+def main():
+    LIMITE_SAQUES = 3
+    AGENCIA = "0001"
+
+    saldo = 0
+    limite = 500
+    extrato = ""
+    numero_saques = 0
+    usuarios = []
+    contas = []
+
+    while True:
+        opcao = menu()
+
+        if opcao == "d":
+            valor = float(input("Informe o valor do depósito: "))
+            saldo, extrato = realizar_deposito(saldo, valor, extrato)
+
+        elif opcao == "s":
+            valor = float(input("Informe o valor do saque: "))
+            saldo, extrato, numero_saques = realizar_saque(
+                saldo=saldo,
+                valor=valor,
+                extrato=extrato,
+                limite=limite,
+                numero_saques=numero_saques,
+                limite_saques=LIMITE_SAQUES,
+            )
+
+        elif opcao == "e":
+            exibir_extrato(saldo, extrato)
+
+        elif opcao == "nu":
+            criar_novo_usuario(usuarios)
+
+        elif opcao == "nc":
+            numero_conta = len(contas) + 1
+            conta = criar_nova_conta(AGENCIA, numero_conta, usuarios)
+            if conta:
+                contas.append(conta)
+
+        elif opcao == "lc":
+            listar_contas(contas)
+
+        elif opcao == "q":
+            break
+
+        else:
+            print("Operação inválida, por favor selecione novamente a operação desejada.")
+
+def realizar_deposito(saldo, valor, extrato):
+    saldo += valor
+    extrato += f"Depósito: +{valor}\n"
+    return saldo, extrato
+
+def realizar_saque(saldo, valor, extrato, limite, numero_saques, limite_saques):
+    if numero_saques < limite_saques:
+        if saldo - valor >= 0 and valor <= limite:
+            saldo -= valor
+            extrato += f"Saque: -{valor}\n"
+            numero_saques += 1
+        else:
+            print("Saldo insuficiente ou valor acima do limite de saque.")
+    else:
+        print("Limite de saques excedido.")
+    return saldo, extrato, numero_saques
+
+def exibir_extrato(saldo, extrato):
+    print(f"Saldo atual: {saldo}")
+    print("Extrato:")
+    print(extrato)
+
+def criar_novo_usuario(usuarios):
+    novo_usuario = {}
+    novo_usuario['nome'] = input("Digite o nome do novo usuário: ")
+    novo_usuario['sobrenome'] = input("Digite o sobrenome do novo usuário: ")
+    novo_usuario['cpf'] = input("Digite o CPF do novo usuário: ")
+    usuarios.append(novo_usuario)
+    print("Novo usuário cadastrado com sucesso!")
+
+def criar_nova_conta(agencia, numero_conta, usuarios):
+    numero_conta = input("Digite o número da nova conta: ")
+    titular_index = int(input("Digite o índice do usuário titular da conta: "))
+    
+    if 0 <= titular_index < len(usuarios):
+        nova_conta = {
+            'agencia': agencia,
+            'numero_conta': numero_conta,
+            'saldo': 0,
+            'titular': usuarios[titular_index]
+        }
+        return nova_conta
+    else:
+        print("Índice de usuário inválido. A nova conta não pôde ser criada.")
+        return None
+
+def listar_contas(contas):
+    print("Lista de Contas:")
+    for conta in contas:
+        print(f"Agência: {conta['agencia']}, Número da Conta: {conta['numero_conta']}, Saldo: {conta['saldo']}, Titular: {conta['titular']['nome']} {conta['titular']['sobrenome']}")
+
+
+
+main()
